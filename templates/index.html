@@ -38,22 +38,32 @@
 
         button {
             padding: 10px 18px;
-            margin: 5px 0;
+            margin: 5px 3px;
             cursor: pointer;
             border: none;
             border-radius: 7px;
             background: #8B6B45;
             color: white;
             font-size: 14px;
-            transition: 0.3s;
         }
 
         button:hover {
             background: #62452D;
-            transform: translateY(-2px);
         }
 
-        input {
+        .delete-btn {
+            background: #A94442;
+        }
+
+        .delete-btn:hover {
+            background: #7C2927;
+        }
+
+        .cancel-btn {
+            background: #777;
+        }
+
+        input, select {
             width: 100%;
             padding: 11px;
             margin: 10px 0;
@@ -64,16 +74,17 @@
             font-size: 14px;
         }
 
-        input:focus {
+        input:focus, select:focus {
             outline: none;
             border-color: #8B6B45;
-            box-shadow: 0 0 5px rgba(139, 107, 69, 0.3);
         }
 
         #result,
         #skillsResult,
         #studentList,
-        #yearResults {
+        #yearResults,
+        #formResult,
+        #classmateRecords {
             margin-top: 20px;
             padding: 15px;
             border: 1px solid #D8C7A3;
@@ -81,11 +92,13 @@
             background: #F5F0E6;
         }
 
-        #result p,
-        #studentList p,
-        #yearResults p {
-            padding: 5px 0;
+        .student-item {
+            padding: 12px 5px;
             border-bottom: 1px solid #E5D9C3;
+        }
+
+        .student-item p {
+            margin: 5px 0;
         }
 
         #greeting {
@@ -141,184 +154,475 @@
 
 <body>
 
-    <div class="container">
+<div class="container">
 
-        <h1>Student API Interface</h1>
+    <h1>Student API Interface</h1>
 
-        <!-- Student Information Section -->
-        <div class="section">
-            <h2>Student Information</h2>
+    <!-- Student Information -->
+    <div class="section">
+        <h2>Student Information</h2>
 
-            <button onclick="loadStudent()">
-                Load Student Information
-            </button>
+        <button onclick="loadStudent()">
+            Load Student Information
+        </button>
 
-            <div id="result">
-                <p>Click the button to view student information.</p>
-            </div>
+        <div id="result">
+            <p>Click the button to view student information.</p>
         </div>
-
-        <hr>
-
-        <!-- Greeting API Section -->
-        <div class="section">
-            <h2>Greeting API</h2>
-
-            <input
-                type="text"
-                id="nameInput"
-                placeholder="Enter your first name"
-            >
-
-            <button onclick="sayHello()">Say Hello</button>
-
-            <p id="greeting"></p>
-        </div>
-
-        <hr>
-
-        <!-- Custom Skills API Section -->
-        <div class="section">
-            <h2>My Skills</h2>
-
-            <p>Click the button below to view my technical skills.</p>
-
-            <button onclick="loadSkills()">Load My Skills</button>
-
-            <div id="skillsResult">
-                <p>Click the button to display your skills.</p>
-            </div>
-        </div>
-
-        <hr>
-
-        <!-- Students from Database Section -->
-        <div class="section">
-            <h2>Students from Database</h2>
-
-            <button onclick="loadStudents()">Load Students</button>
-
-            <div id="studentList">
-                <p>Click the button to view students from the database.</p>
-            </div>
-        </div>
-
-        <hr>
-
-        <!-- Students by Year Level Section -->
-        <div class="section">
-            <h2>Search Students by Year Level</h2>
-
-            <select id="yearInput">
-                <option value="1">First Year</option>
-                <option value="2">Second Year</option>
-                <option value="3">Third Year</option>
-                <option value="4">Fourth Year</option>
-            </select>
-
-            <button onclick="loadStudentsByYear()">
-                Search Students
-            </button>
-
-            <div id="yearResults">
-                <p>Select a year level to view students.</p>
-            </div>
-        </div>
-
-        <div class="footer">
-            <p>Powered by Python Flask API</p>
-        </div>
-
     </div>
 
-    <script>
+    <hr>
 
-        // Load Student Information
-        function loadStudent() {
-            fetch('/student')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Failed to load student data');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    document.getElementById('result').innerHTML =
-                        '<p><b>Student ID:</b> ' + data.student_id + '</p>' +
-                        '<p><b>Name:</b> ' + data.name + '</p>' +
-                        '<p><b>Program:</b> ' + data.program + '</p>' +
-                        '<p><b>Year:</b> ' + data.year + '</p>' +
-                        '<p><b>Section:</b> ' + data.section + '</p>';
-                })
-                .catch(error => {
-                    document.getElementById('result').innerHTML =
-                        '<p>Unable to retrieve data.</p>';
+    <!-- Greeting API -->
+    <div class="section">
+        <h2>Greeting API</h2>
+
+        <input
+            type="text"
+            id="nameInput"
+            placeholder="Enter your first name"
+        >
+
+        <button onclick="sayHello()">Say Hello</button>
+
+        <p id="greeting"></p>
+    </div>
+
+    <hr>
+
+    <!-- Skills API -->
+    <div class="section">
+        <h2>My Skills</h2>
+
+        <button onclick="loadSkills()">Load My Skills</button>
+
+        <div id="skillsResult">
+            <p>Click the button to display your skills.</p>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- Student CRUD Form -->
+    <div class="section">
+        <h2>Student Management</h2>
+
+        <input
+            type="text"
+            id="studentIdInput"
+            placeholder="Enter Student ID"
+        >
+
+        <input
+            type="text"
+            id="studentNameInput"
+            placeholder="Enter Student Name"
+        >
+
+        <input
+            type="text"
+            id="programInput"
+            placeholder="Enter Program"
+        >
+
+        <input
+            type="number"
+            id="studentYearInput"
+            placeholder="Enter Year (1-4)"
+            min="1"
+            max="4"
+        >
+
+        <input
+            type="text"
+            id="sectionInput"
+            placeholder="Enter Section"
+        >
+
+        <button id="submitButton" onclick="saveStudent()">
+            Add Student
+        </button>
+
+        <button
+            id="cancelButton"
+            class="cancel-btn"
+            onclick="cancelEdit()"
+            style="display:none;"
+        >
+            Cancel Edit
+        </button>
+
+        <div id="formResult">
+            <p>Enter student information to add a student.</p>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- Students from Database -->
+    <div class="section">
+        <h2>Students from Database</h2>
+
+        <button onclick="loadStudents()">Load Students</button>
+
+        <div id="studentList">
+            <p>Click the button to view students from the database.</p>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- Search Students by Year -->
+    <div class="section">
+        <h2>Search Students by Year Level</h2>
+
+        <select id="yearInput">
+            <option value="1">First Year</option>
+            <option value="2">Second Year</option>
+            <option value="3">Third Year</option>
+            <option value="4">Fourth Year</option>
+        </select>
+
+        <button onclick="loadStudentsByYear()">
+            Search Students
+        </button>
+
+        <div id="yearResults">
+            <p>Select a year level to view students.</p>
+        </div>
+    </div>
+
+
+    <hr>
+
+    <!-- Classmate's Records -->
+    <div class="section">
+        <h2>Classmate's Records</h2>
+
+        <button onclick="loadClassmateRecords()">
+            View Classmate's Records
+        </button>
+
+        <div id="classmateRecords">
+            <p>Click the button to view your classmate's records.</p>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Powered by Python Flask API</p>
+    </div>
+
+</div>
+
+<script>
+
+    // Store the ID of the student being edited
+    let editingStudentId = null;
+
+
+    // Load Student Information
+    function loadStudent() {
+        fetch('/student')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('result').innerHTML =
+                    '<p><b>Student ID:</b> ' + data.student_id + '</p>' +
+                    '<p><b>Name:</b> ' + data.name + '</p>' +
+                    '<p><b>Program:</b> ' + data.program + '</p>' +
+                    '<p><b>Year:</b> ' + data.year + '</p>' +
+                    '<p><b>Section:</b> ' + data.section + '</p>';
+            })
+            .catch(error => {
+                document.getElementById('result').innerHTML =
+                    '<p>Unable to retrieve data.</p>';
+            });
+    }
+
+
+    // Greeting API
+    function sayHello() {
+        const name = document.getElementById('nameInput').value;
+
+        fetch('/hello?name=' + encodeURIComponent(name))
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('greeting').innerText =
+                    data.message;
+            })
+            .catch(error => {
+                document.getElementById('greeting').innerText =
+                    'Unable to retrieve greeting.';
+            });
+    }
+
+
+    // Load Skills
+    function loadSkills() {
+        fetch('/skills')
+            .then(response => response.json())
+            .then(data => {
+                let skillsList = '<ul>';
+
+                data.skills.forEach(skill => {
+                    skillsList += '<li>' + skill + '</li>';
                 });
-        }
+
+                skillsList += '</ul>';
+
+                document.getElementById('skillsResult').innerHTML =
+                    skillsList;
+            })
+            .catch(error => {
+                document.getElementById('skillsResult').innerHTML =
+                    '<p>Unable to retrieve skills.</p>';
+            });
+    }
 
 
-        // Greeting API
-        function sayHello() {
-            const name = document.getElementById('nameInput').value;
+    // Load All Students
+    function loadStudents() {
+        fetch('/students')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to load students.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                let output = '';
 
-            fetch('/hello?name=' + encodeURIComponent(name))
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Failed to get greeting');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    document.getElementById('greeting').innerText =
-                        data.message;
-                })
-                .catch(error => {
-                    document.getElementById('greeting').innerText =
-                        'Unable to retrieve greeting.';
-                });
-        }
+                if (data.length === 0) {
+                    output = '<p>No student records found.</p>';
+                } else {
+                    data.forEach(student => {
+                        output += `
+                            <div class="student-item">
+                                <p><b>Student ID:</b> ${student.student_id}</p>
+                                <p><b>Name:</b> ${student.name}</p>
+                                <p><b>Program:</b> ${student.program}</p>
+                                <p><b>Year:</b> ${student.year}</p>
+                                <p><b>Section:</b> ${student.section}</p>
 
+                                <button onclick="editStudent(${student.id})">
+                                    Edit
+                                </button>
 
-        // Custom Skills API
-        function loadSkills() {
-            fetch('/skills')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Failed to load skills');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    let skillsList = '<ul>';
-
-                    data.skills.forEach(skill => {
-                        skillsList += '<li>' + skill + '</li>';
+                                <button class="delete-btn"
+                                    onclick="deleteStudent(${student.id})">
+                                    Delete
+                                </button>
+                            </div>
+                        `;
                     });
+                }
 
-                    skillsList += '</ul>';
+                document.getElementById('studentList').innerHTML = output;
+            })
+            .catch(error => {
+                document.getElementById('studentList').innerHTML =
+                    '<p>Unable to retrieve student records.</p>';
+            });
+    }
 
-                    document.getElementById('skillsResult').innerHTML =
-                        skillsList;
-                })
-                .catch(error => {
-                    document.getElementById('skillsResult').innerHTML =
-                        '<p>Unable to retrieve skills.</p>';
-                });
+
+    // Add or Update Student
+    function saveStudent() {
+
+        const studentData = {
+            student_id: document.getElementById('studentIdInput').value.trim(),
+            name: document.getElementById('studentNameInput').value.trim(),
+            program: document.getElementById('programInput').value.trim(),
+            year: document.getElementById('studentYearInput').value,
+            section: document.getElementById('sectionInput').value.trim()
+        };
+
+        if (!studentData.student_id ||
+            !studentData.name ||
+            !studentData.program ||
+            !studentData.year ||
+            !studentData.section) {
+
+            document.getElementById('formResult').innerHTML =
+                '<p>Please complete all fields.</p>';
+            return;
         }
 
+        const isEditing = editingStudentId !== null;
 
-        // Load Students from Database
-        function loadStudents() {
-            fetch('/students')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Failed to load students');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    let output = '';
+        const url = isEditing
+            ? '/api/students/' + editingStudentId
+            : '/api/students';
 
+        const method = isEditing ? 'PUT' : 'POST';
+
+        fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(studentData)
+        })
+        .then(response => response.json().then(data => ({
+            status: response.status,
+            data: data
+        })))
+        .then(result => {
+
+            if (!result.data.message) {
+                throw new Error(
+                    result.data.error || 'Unable to save student.'
+                );
+            }
+
+            document.getElementById('formResult').innerHTML =
+                '<p>' + result.data.message + '</p>';
+
+            clearForm();
+            loadStudents();
+
+        })
+        .catch(error => {
+            document.getElementById('formResult').innerHTML =
+                '<p>' + error.message + '</p>';
+        });
+    }
+
+
+    // Load Student Details into Form for Editing
+    function editStudent(id) {
+
+        fetch('/students/' + id)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Student not found.');
+                }
+                return response.json();
+            })
+            .then(student => {
+
+                editingStudentId = student.id;
+
+                document.getElementById('studentIdInput').value =
+                    student.student_id;
+
+                document.getElementById('studentNameInput').value =
+                    student.name;
+
+                document.getElementById('programInput').value =
+                    student.program;
+
+                document.getElementById('studentYearInput').value =
+                    student.year;
+
+                document.getElementById('sectionInput').value =
+                    student.section;
+
+                document.getElementById('submitButton').innerText =
+                    'Update Student';
+
+                document.getElementById('cancelButton').style.display =
+                    'inline-block';
+
+                document.getElementById('formResult').innerHTML =
+                    '<p>Editing student: ' + student.student_id + '</p>';
+
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            })
+            .catch(error => {
+                alert(error.message);
+            });
+    }
+
+
+    // Delete Student
+    function deleteStudent(id) {
+
+        if (!confirm('Are you sure you want to delete this student?')) {
+            return;
+        }
+
+        fetch('/api/students/' + id, {
+            method: 'DELETE'
+        })
+        .then(response => response.json().then(data => ({
+            status: response.status,
+            data: data
+        })))
+        .then(result => {
+
+            if (!result.data.message) {
+                throw new Error(
+                    result.data.error || 'Unable to delete student.'
+                );
+            }
+
+            document.getElementById('formResult').innerHTML =
+                '<p>' + result.data.message + '</p>';
+
+            if (editingStudentId === id) {
+                clearForm();
+            }
+
+            loadStudents();
+
+        })
+        .catch(error => {
+            alert(error.message);
+        });
+    }
+
+
+    // Clear Form
+    function clearForm() {
+
+        editingStudentId = null;
+
+        document.getElementById('studentIdInput').value = '';
+        document.getElementById('studentNameInput').value = '';
+        document.getElementById('programInput').value = '';
+        document.getElementById('studentYearInput').value = '';
+        document.getElementById('sectionInput').value = '';
+
+        document.getElementById('submitButton').innerText =
+            'Add Student';
+
+        document.getElementById('cancelButton').style.display =
+            'none';
+    }
+
+
+    // Cancel Editing
+    function cancelEdit() {
+        clearForm();
+
+        document.getElementById('formResult').innerHTML =
+            '<p>Editing cancelled.</p>';
+    }
+
+
+    // Search Students by Year Level
+    function loadStudentsByYear() {
+
+        const year = document.getElementById('yearInput').value;
+
+        fetch('/students/year/' + year)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to load students.');
+                }
+                return response.json();
+            })
+            .then(data => {
+
+                let output = '';
+
+                if (data.length === 0) {
+                    output =
+                        '<p>No students found for this year level.</p>';
+                } else {
                     data.forEach(student => {
                         output +=
                             '<p>' +
@@ -329,55 +633,80 @@
                             student.section +
                             '</p>';
                     });
+                }
 
-                    document.getElementById('studentList').innerHTML =
-                        output || '<p>No student records found.</p>';
-                })
-                .catch(error => {
-                    document.getElementById('studentList').innerHTML =
-                        '<p>Unable to retrieve student records.</p>';
+                document.getElementById('yearResults').innerHTML =
+                    output;
+            })
+            .catch(error => {
+                document.getElementById('yearResults').innerHTML =
+                    '<p>Unable to retrieve student records.</p>';
+            });
+    }
+
+
+    // Classmate's API URL
+    // Replace this with your partner's actual Render API URL.
+    const classmateAPI = "https://raveenemmanuelcelo.onrender.com";
+
+    // Load Classmate's Records
+    function loadClassmateRecords() {
+        const container = document.getElementById('classmateRecords');
+
+        container.innerHTML = '<p>Loading classmate records...</p>';
+
+        fetch(classmateAPI)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Unable to retrieve classmate records.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log(data);
+
+                if (!Array.isArray(data) || data.length === 0) {
+                    container.innerHTML = '<p>No classmate records found.</p>';
+                    return;
+                }
+
+                let output = `
+                    <table border="1" cellpadding="8" cellspacing="0"
+                           style="width:100%; border-collapse:collapse;">
+                        <tr>
+                            <th>ID</th>
+                            <th>Student ID</th>
+                            <th>Name</th>
+                            <th>Program</th>
+                            <th>Year</th>
+                            <th>Section</th>
+                        </tr>
+                `;
+
+                data.forEach(student => {
+                    output += `
+                        <tr>
+                            <td>${student.id ?? ''}</td>
+                            <td>${student.student_id ?? ''}</td>
+                            <td>${student.name ?? ''}</td>
+                            <td>${student.program ?? ''}</td>
+                            <td>${student.year ?? ''}</td>
+                            <td>${student.section ?? ''}</td>
+                        </tr>
+                    `;
                 });
-        }
 
+                output += '</table>';
+                container.innerHTML = output;
+            })
+            .catch(error => {
+                console.error('Classmate API error:', error);
+                container.innerHTML =
+                    '<p>Failed to load records. Check the Render API URL, make sure the API is running, and ask your classmate to enable CORS if needed.</p>';
+            });
+    }
 
-        // Load Students by Year Level
-        function loadStudentsByYear() {
-            const year = document.getElementById('yearInput').value;
-
-            fetch('/students/year/' + year)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Failed to load students');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    let output = '';
-
-                    if (data.length === 0) {
-                        output = '<p>No students found for this year level.</p>';
-                    } else {
-                        data.forEach(student => {
-                            output +=
-                                '<p>' +
-                                '<b>' + student.student_id + '</b> - ' +
-                                student.name + ' | ' +
-                                student.program + ' | Year ' +
-                                student.year + ' | Section ' +
-                                student.section +
-                                '</p>';
-                        });
-                    }
-
-                    document.getElementById('yearResults').innerHTML = output;
-                })
-                .catch(error => {
-                    document.getElementById('yearResults').innerHTML =
-                        '<p>Unable to retrieve student records.</p>';
-                });
-        }
-
-    </script>
+</script>
 
 </body>
 </html>
