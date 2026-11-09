@@ -5,7 +5,6 @@
     <title>Student API Interface</title>
 
     <style>
-        
         * {
             box-sizing: border-box;
         }
@@ -71,7 +70,8 @@
             box-shadow: 0 0 5px rgba(139, 107, 69, 0.3);
         }
 
-        #result {
+        #result,
+        #skillsResult {
             margin-top: 20px;
             padding: 15px;
             border: 1px solid #D8C7A3;
@@ -91,6 +91,18 @@
             color: #62452D;
             border-radius: 8px;
             font-weight: bold;
+        }
+
+        #skillsResult ul {
+            padding-left: 25px;
+        }
+
+        #skillsResult li {
+            padding: 7px;
+            margin: 5px 0;
+            background: #EDE3D0;
+            border-radius: 5px;
+            color: #62452D;
         }
 
         hr {
@@ -120,7 +132,6 @@
                 padding: 20px;
             }
         }
-
     </style>
 </head>
 
@@ -160,6 +171,21 @@
             <p id="greeting"></p>
         </div>
 
+        <hr>
+
+        <!-- Custom Skills API Section -->
+        <div class="section">
+            <h2>My Skills</h2>
+
+            <p>Click the button below to view my technical skills.</p>
+
+            <button onclick="loadSkills()">Load My Skills</button>
+
+            <div id="skillsResult">
+                <p>Click the button to display your skills.</p>
+            </div>
+        </div>
+
         <div class="footer">
             <p>Powered by Python Flask API</p>
         </div>
@@ -167,10 +193,16 @@
     </div>
 
     <script>
+
         // Load Student Information
         function loadStudent() {
             fetch('/student')
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load student data');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     document.getElementById('result').innerHTML =
                         '<p><b>Student ID:</b> ' + data.student_id + '</p>' +
@@ -185,12 +217,18 @@
                 });
         }
 
+
         // Greeting API
         function sayHello() {
             const name = document.getElementById('nameInput').value;
 
             fetch('/hello?name=' + encodeURIComponent(name))
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to get greeting');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     document.getElementById('greeting').innerText =
                         data.message;
@@ -200,6 +238,35 @@
                         'Unable to retrieve greeting.';
                 });
         }
+
+
+        // Custom Skills API
+        function loadSkills() {
+            fetch('/skills')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load skills');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    let skillsList = '<ul>';
+
+                    data.skills.forEach(skill => {
+                        skillsList += '<li>' + skill + '</li>';
+                    });
+
+                    skillsList += '</ul>';
+
+                    document.getElementById('skillsResult').innerHTML =
+                        skillsList;
+                })
+                .catch(error => {
+                    document.getElementById('skillsResult').innerHTML =
+                        '<p>Unable to retrieve skills.</p>';
+                });
+        }
+
     </script>
 
 </body>
