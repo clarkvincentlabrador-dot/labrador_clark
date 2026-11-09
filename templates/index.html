@@ -71,7 +71,9 @@
         }
 
         #result,
-        #skillsResult {
+        #skillsResult,
+        #studentList,
+        #yearResults {
             margin-top: 20px;
             padding: 15px;
             border: 1px solid #D8C7A3;
@@ -79,7 +81,9 @@
             background: #F5F0E6;
         }
 
-        #result p {
+        #result p,
+        #studentList p,
+        #yearResults p {
             padding: 5px 0;
             border-bottom: 1px solid #E5D9C3;
         }
@@ -186,6 +190,41 @@
             </div>
         </div>
 
+        <hr>
+
+        <!-- Students from Database Section -->
+        <div class="section">
+            <h2>Students from Database</h2>
+
+            <button onclick="loadStudents()">Load Students</button>
+
+            <div id="studentList">
+                <p>Click the button to view students from the database.</p>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Students by Year Level Section -->
+        <div class="section">
+            <h2>Search Students by Year Level</h2>
+
+            <select id="yearInput">
+                <option value="1">First Year</option>
+                <option value="2">Second Year</option>
+                <option value="3">Third Year</option>
+                <option value="4">Fourth Year</option>
+            </select>
+
+            <button onclick="loadStudentsByYear()">
+                Search Students
+            </button>
+
+            <div id="yearResults">
+                <p>Select a year level to view students.</p>
+            </div>
+        </div>
+
         <div class="footer">
             <p>Powered by Python Flask API</p>
         </div>
@@ -264,6 +303,77 @@
                 .catch(error => {
                     document.getElementById('skillsResult').innerHTML =
                         '<p>Unable to retrieve skills.</p>';
+                });
+        }
+
+
+        // Load Students from Database
+        function loadStudents() {
+            fetch('/students')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load students');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    let output = '';
+
+                    data.forEach(student => {
+                        output +=
+                            '<p>' +
+                            '<b>' + student.student_id + '</b> - ' +
+                            student.name + ' | ' +
+                            student.program + ' | Year ' +
+                            student.year + ' | Section ' +
+                            student.section +
+                            '</p>';
+                    });
+
+                    document.getElementById('studentList').innerHTML =
+                        output || '<p>No student records found.</p>';
+                })
+                .catch(error => {
+                    document.getElementById('studentList').innerHTML =
+                        '<p>Unable to retrieve student records.</p>';
+                });
+        }
+
+
+        // Load Students by Year Level
+        function loadStudentsByYear() {
+            const year = document.getElementById('yearInput').value;
+
+            fetch('/students/year/' + year)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load students');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    let output = '';
+
+                    if (data.length === 0) {
+                        output = '<p>No students found for this year level.</p>';
+                    } else {
+                        data.forEach(student => {
+                            output +=
+                                '<p>' +
+                                '<b>' + student.student_id + '</b> - ' +
+                                student.name + ' | ' +
+                                student.program + ' | Year ' +
+                                student.year + ' | Section ' +
+                                student.section +
+                                '</p>';
+                        });
+                    }
+
+                    document.getElementById('yearResults').innerHTML = output;
+                })
+                .catch(error => {
+                    document.getElementById('yearResults').innerHTML =
+                        '<p>Unable to retrieve student records.</p>';
                 });
         }
 
