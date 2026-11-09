@@ -1,0 +1,206 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student API Interface</title>
+
+    <style>
+        
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #F5F0E6;
+            color: #4B382A;
+        }
+
+        .container {
+            background: #FFFDF8;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(76, 55, 35, 0.12);
+        }
+
+        h1 {
+            text-align: center;
+            color: #765638;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            color: #806747;
+            margin-top: 25px;
+        }
+
+        button {
+            padding: 10px 18px;
+            margin: 5px 0;
+            cursor: pointer;
+            border: none;
+            border-radius: 7px;
+            background: #8B6B45;
+            color: white;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #62452D;
+            transform: translateY(-2px);
+        }
+
+        input {
+            width: 100%;
+            padding: 11px;
+            margin: 10px 0;
+            border: 1px solid #D8C7A3;
+            border-radius: 7px;
+            background: #FAF7F0;
+            color: #4B382A;
+            font-size: 14px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #8B6B45;
+            box-shadow: 0 0 5px rgba(139, 107, 69, 0.3);
+        }
+
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #D8C7A3;
+            border-radius: 10px;
+            background: #F5F0E6;
+        }
+
+        #result p {
+            padding: 5px 0;
+            border-bottom: 1px solid #E5D9C3;
+        }
+
+        #greeting {
+            margin-top: 15px;
+            padding: 12px;
+            background: #EDE3D0;
+            color: #62452D;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid #D8C7A3;
+            margin: 30px 0;
+        }
+
+        .section {
+            margin-top: 20px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+            color: #A68A64;
+            font-size: 12px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                margin: 10px auto;
+                padding: 12px;
+            }
+
+            .container {
+                padding: 20px;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Student API Interface</h1>
+
+        <!-- Student Information Section -->
+        <div class="section">
+            <h2>Student Information</h2>
+
+            <button onclick="loadStudent()">
+                Load Student Information
+            </button>
+
+            <div id="result">
+                <p>Click the button to view student information.</p>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Greeting API Section -->
+        <div class="section">
+            <h2>Greeting API</h2>
+
+            <input
+                type="text"
+                id="nameInput"
+                placeholder="Enter your first name"
+            >
+
+            <button onclick="sayHello()">Say Hello</button>
+
+            <p id="greeting"></p>
+        </div>
+
+        <div class="footer">
+            <p>Powered by Python Flask API</p>
+        </div>
+
+    </div>
+
+    <script>
+        // Load Student Information
+        function loadStudent() {
+            fetch('/student')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('result').innerHTML =
+                        '<p><b>Student ID:</b> ' + data.student_id + '</p>' +
+                        '<p><b>Name:</b> ' + data.name + '</p>' +
+                        '<p><b>Program:</b> ' + data.program + '</p>' +
+                        '<p><b>Year:</b> ' + data.year + '</p>' +
+                        '<p><b>Section:</b> ' + data.section + '</p>';
+                })
+                .catch(error => {
+                    document.getElementById('result').innerHTML =
+                        '<p>Unable to retrieve data.</p>';
+                });
+        }
+
+        // Greeting API
+        function sayHello() {
+            const name = document.getElementById('nameInput').value;
+
+            fetch('/hello?name=' + encodeURIComponent(name))
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('greeting').innerText =
+                        data.message;
+                })
+                .catch(error => {
+                    document.getElementById('greeting').innerText =
+                        'Unable to retrieve greeting.';
+                });
+        }
+    </script>
+
+</body>
+</html>
