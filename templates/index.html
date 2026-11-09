@@ -370,6 +370,35 @@ tr:hover {
     </div>
 </section>
 
+<section class="card classmate-card">
+    <h2>Partner Records</h2>
+    <p>Retrieve student records from the Partner Database and save selected records to your local database.</p>
+
+    <button type="button" onclick="loadPartnerRecords()">Load Partner Records</button>
+    <div id="partnerStatus" class="status">Ready to connect to Partner API.</div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Name</th>
+                    <th>Program</th>
+                    <th>Year</th>
+                    <th>Section</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="partnerTable">
+                <tr><td colspan="6" class="empty">Click Load Partner Records.</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h3>Partner Record Details</h3>
+    <div id="partnerDetails" class="api-result">Select View to see a partner record.</div>
+</section>
+
 <div class="footer">
     <p>Powered by Python Flask API and SQLite Database</p>
 </div>
@@ -795,6 +824,113 @@ function clearClassmateRecords() {
         '<tr><td colspan="6" class="empty">Records cleared.</td></tr>';
 
     showStatus("classmateStatus", "Classmate records cleared.");
+}
+
+
+
+
+// PARTNER RECORDS
+let partnerRecords = [];
+
+async function loadPartnerRecords() {
+    const table = document.getElementById("partnerTable");
+    table.innerHTML = '<tr><td colspan="6" class="empty">Loading partner records...</td></tr>';
+    showStatus("partnerStatus", "Connecting to Partner API...");
+
+    try {
+        // Your Flask backend should call the partner's API and return a JSON array.
+        const response = await fetch("/partner-records");
+        const records = await getJsonResponse(response);
+
+        if (!Array.isArray(records)) {
+            throw new Error("Partner API must return a JSON array of student records.");
+        }
+
+        partnerRecords = records;
+        table.innerHTML = "";
+
+        if (records.length === 0) {
+            table.innerHTML = '<tr><td colspan="6" class="empty">No partner records found.</td></tr>';
+            showStatus("partnerStatus", "No partner records found.");
+            return;
+        }
+
+        records.forEach((student, index) => {
+            const row = document.createElement("tr");
+            [student.student_id, student.name, student.program, student.year, student.section]
+                .forEach(value => {
+                    const cell = document.createElement("td");
+                    cell.textContent = value ?? "N/A";
+                    row.appendChild(cell);
+                });
+
+            const actions = document.createElement("td");
+            const viewButton = document.createElement("button");
+            viewButton.type = "button";
+            viewButton.textContent = "View";
+            viewButton.onclick = () => viewPartnerRecord(index);
+
+            const saveButton = document.createElement("button");
+            saveButton.type = "button";
+            saveButton.textContent = "Save to My Database";
+            saveButton.onclick = () => savePartnerRecord(index);
+
+            actions.append(viewButton, saveButton);
+            row.appendChild(actions);
+            table.appendChild(row);
+        });
+
+        showStatus("partnerStatus", `Successfully loaded ${records.length} partner record(s).`);
+    } catch (error) {
+        table.innerHTML = '<tr><td colspan="6" class="empty">Unable to load partner records.</td></tr>';
+        showStatus("partnerStatus", error.message, true);
+    }
+}
+
+function viewPartnerRecord(index) {
+    const student = partnerRecords[index];
+    if (!student) return;
+
+    document.getElementById("partnerDetails").textContent =
+        `Student ID: ${student.student_id ?? "N/A"}\n` +
+        `Name: ${student.name ?? "N/A"}\n` +
+        `Program: ${student.program ?? "N/A"}\n` +
+        `Year: ${student.year ?? "N/A"}\n` +
+        `Section: ${student.section ?? "N/A"}\n` +
+        "Source: Partner Database";
+}
+
+async function savePartnerRecord(index) {
+    const student = partnerRecords[index];
+    if (!student) return;
+
+    const data = {
+        student_id: String(student.student_id ?? "").trim(),
+        name: String(student.name ?? "").trim(),
+        program: String(student.program ?? "").trim(),
+        year: Number(student.year),
+        section: String(student.section ?? "").trim(),
+        source: "Imported"
+    };
+
+    if (!data.student_id || !data.name || !data.program || !data.section ||
+        !Number.isInteger(data.year) || data.year < 1 || data.year > 4) {
+        showStatus("partnerStatus", "This partner record has missing or invalid fields.", true);
+        return;
+    }
+
+    try {
+        const response = await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+        const result = await getJsonResponse(response);
+        showStatus("partnerStatus", result.message || "Partner record saved successfully.");
+        await loadStudents();
+    } catch (error) {
+        showStatus("partnerStatus", error.message, true);
+    }
 }
 
 
