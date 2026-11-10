@@ -490,7 +490,7 @@ def import_student():
         return jsonify({
             "message": "Partner record saved successfully!",
             "id": new_id,
-            "source": "Imported"
+            "source": "Partner API"
         }), 201
 
     except sqlite3.IntegrityError:
