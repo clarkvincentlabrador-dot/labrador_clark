@@ -485,7 +485,7 @@ def import_student():
         return jsonify({"error": error}), 400
 
     try:
-        new_id = insert_student(data, "Imported")
+        new_id = insert_student(data, "Partner API")
 
         return jsonify({
             "message": "Partner record saved successfully!",
