@@ -14,7 +14,6 @@ DATABASE = Path(__file__).resolve().parent / "students.db"
 CLASSMATE_API = "https://13.238.105.177/api/students"
 
 # PARTNER API
-# This points to Raveen's API.
 PARTNER_API = "http://13.238.105.177/api/students"
 PARTNER_POST_URL = PARTNER_API
 
@@ -78,11 +77,7 @@ def validate_student_data(data):
         return "Invalid JSON data."
 
     required_fields = [
-        "student_id",
-        "name",
-        "program",
-        "year",
-        "section"
+        "student_id", "name", "program", "year", "section"
     ]
 
     for field in required_fields:
@@ -208,6 +203,44 @@ def get_students():
         conn.close()
 
 
+# INTEGRATION DASHBOARD DATA
+@app.route("/api/integration/records", methods=["GET"])
+def integration_records():
+
+    conn = get_db_connection()
+
+    try:
+        local_records = conn.execute("""
+            SELECT * FROM students
+            WHERE source = 'Local'
+            ORDER BY id DESC
+        """).fetchall()
+
+        imported_records = conn.execute("""
+            SELECT * FROM students
+            WHERE source != 'Local'
+            ORDER BY id DESC
+        """).fetchall()
+
+        return jsonify({
+            "local_records": [
+                dict(student) for student in local_records
+            ],
+            "imported_records": [
+                dict(student) for student in imported_records
+            ],
+            "local_count": len(local_records),
+            "imported_count": len(imported_records),
+            "total_count": len(local_records) + len(imported_records)
+        })
+
+    except sqlite3.Error as error:
+        return jsonify({"error": str(error)}), 500
+
+    finally:
+        conn.close()
+
+
 # GET ONE STUDENT
 @app.route("/students/<int:id>", methods=["GET"])
 @app.route("/api/students/<int:id>", methods=["GET"])
@@ -222,9 +255,7 @@ def get_student_by_id(id):
         ).fetchone()
 
         if student is None:
-            return jsonify({
-                "error": "Student not found."
-            }), 404
+            return jsonify({"error": "Student not found."}), 404
 
         return jsonify(dict(student))
 
@@ -268,27 +299,20 @@ def get_students_by_year(year):
 def add_student():
 
     data = request.get_json(silent=True)
-
     error = validate_student_data(data)
 
     if error:
         return jsonify({"error": error}), 400
 
-    source = str(
-        data.get("source", "External API")
-    ).strip()
+    source = str(data.get("source", "Local")).strip()
 
     allowed_sources = [
-        "Local",
-        "Imported",
-        "External API",
-        "Partner API"
+        "Local", "Imported", "External API", "Partner API"
     ]
 
     if source not in allowed_sources:
         return jsonify({
             "error": "Invalid student source.",
-            "received_source": source,
             "allowed_sources": allowed_sources
         }), 400
 
@@ -315,7 +339,6 @@ def add_student():
 def update_student(id):
 
     data = request.get_json(silent=True)
-
     error = validate_student_data(data)
 
     if error:
@@ -325,14 +348,11 @@ def update_student(id):
 
     try:
         existing = conn.execute(
-            "SELECT id FROM students WHERE id = ?",
-            (id,)
+            "SELECT id FROM students WHERE id = ?", (id,)
         ).fetchone()
 
         if existing is None:
-            return jsonify({
-                "error": "Student not found."
-            }), 404
+            return jsonify({"error": "Student not found."}), 404
 
         conn.execute("""
             UPDATE students
@@ -377,14 +397,11 @@ def delete_student(id):
 
     try:
         cursor = conn.execute(
-            "DELETE FROM students WHERE id = ?",
-            (id,)
+            "DELETE FROM students WHERE id = ?", (id,)
         )
 
         if cursor.rowcount == 0:
-            return jsonify({
-                "error": "Student not found."
-            }), 404
+            return jsonify({"error": "Student not found."}), 404
 
         conn.commit()
 
@@ -404,11 +421,7 @@ def delete_student(id):
 def get_classmate_students():
 
     try:
-        response = requests.get(
-            CLASSMATE_API,
-            timeout=30
-        )
-
+        response = requests.get(CLASSMATE_API, timeout=30)
         response.raise_for_status()
         records = response.json()
 
@@ -441,11 +454,7 @@ def get_classmate_students():
 def partner_records():
 
     try:
-        response = requests.get(
-            PARTNER_API,
-            timeout=30
-        )
-
+        response = requests.get(PARTNER_API, timeout=30)
         response.raise_for_status()
         records = response.json()
 
@@ -478,7 +487,6 @@ def partner_records():
 def import_student():
 
     data = request.get_json(silent=True)
-
     error = validate_student_data(data)
 
     if error:
@@ -503,7 +511,6 @@ def import_student():
 
 
 # SEND PRACTICE RECORD TO PARTNER
-# AUTOMATIC - NO INPUT REQUIRED
 @app.route("/send-to-partner", methods=["POST"])
 def send_to_partner():
 
