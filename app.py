@@ -15,7 +15,7 @@ CLASSMATE_API = "https://13.238.105.177/api/students"
 
 # PARTNER API
 # This points to Raveen's API.
-PARTNER_API = "https://raveenemmanuelcelo.onrender.com/api/students"
+PARTNER_API = "http://13.238.105.177/api/students"
 PARTNER_POST_URL = PARTNER_API
 
 
