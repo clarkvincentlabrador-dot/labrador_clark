@@ -11,7 +11,7 @@ CORS(app)
 DATABASE = Path(__file__).resolve().parent / "students.db"
 
 # RAVEEN'S DEPLOYED STUDENT API
-CLASSMATE_API = "https://raveenemmanuelcelo.onrender.com/api/students"
+CLASSMATE_API = "https://13.238.105.177/api/students"
 
 # PARTNER API
 # This points to Raveen's API.
